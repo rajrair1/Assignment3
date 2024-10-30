@@ -1,0 +1,21 @@
+{
+  "name": "ticket-sale",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "chai": "^5.1.2",
+    "ganache-cli": "^6.12.2",
+    "mocha": "^10.8.1",
+    "solc": "^0.8.17",
+    "web3": "^1.10.4"
+  }
+}
