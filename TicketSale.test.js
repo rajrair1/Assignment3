@@ -1,4 +1,3 @@
-// test.js
 const assert = require('assert');
 const Web3 = require('web3');
 const fs = require('fs');
@@ -20,8 +19,8 @@ before(async () => {
 
     // Deploy contract
     ticketSale = await new web3.eth.Contract(abi)
-        .deploy({ data: bytecode, arguments: [100000, web3.utils.toWei('0.01', 'ether')] })
-        .send({ from: accounts[0], gas: '2000000' });
+        .deploy({ data: bytecode, arguments: [1000, web3.utils.toWei('0.01', 'ether')] })
+        .send({ from: accounts[0], gas: '4000000' });
 });
 
 describe('TicketSale Contract', () => {
@@ -33,6 +32,7 @@ describe('TicketSale Contract', () => {
         await ticketSale.methods.buyTicket(1).send({
             from: accounts[1],
             value: web3.utils.toWei('0.01', 'ether'),
+            gas: '500000',
         });
         const ticketOwner = await ticketSale.methods.getTicketOf(accounts[1]).call();
         assert.equal(ticketOwner, 1);
@@ -43,6 +43,7 @@ describe('TicketSale Contract', () => {
             await ticketSale.methods.buyTicket(2).send({
                 from: accounts[1],
                 value: web3.utils.toWei('0.01', 'ether'),
+                gas: '500000',
             });
             assert.fail('Account should not be able to buy multiple tickets');
         } catch (error) {
@@ -54,10 +55,11 @@ describe('TicketSale Contract', () => {
         await ticketSale.methods.buyTicket(2).send({
             from: accounts[2],
             value: web3.utils.toWei('0.01', 'ether'),
+            gas: '500000',
         });
 
-        await ticketSale.methods.offerSwap(1).send({ from: accounts[1] });
-        await ticketSale.methods.acceptSwap(1).send({ from: accounts[2] });
+        await ticketSale.methods.offerSwap(1).send({ from: accounts[1], gas: '500000' });
+        await ticketSale.methods.acceptSwap(1).send({ from: accounts[2], gas: '500000' });
 
         const ticketOwner1 = await ticketSale.methods.getTicketOf(accounts[1]).call();
         const ticketOwner2 = await ticketSale.methods.getTicketOf(accounts[2]).call();
@@ -69,11 +71,13 @@ describe('TicketSale Contract', () => {
     it('Allows a ticket resale with correct payment distribution', async () => {
         await ticketSale.methods.resaleTicket(web3.utils.toWei('0.005', 'ether')).send({
             from: accounts[1],
+            gas: '500000',
         });
 
         await ticketSale.methods.acceptResale(2).send({
             from: accounts[3],
             value: web3.utils.toWei('0.005', 'ether'),
+            gas: '500000',
         });
 
         const newOwner = await ticketSale.methods.getTicketOf(accounts[3]).call();
@@ -83,10 +87,11 @@ describe('TicketSale Contract', () => {
     it('Displays resale tickets and their prices', async () => {
         await ticketSale.methods.resaleTicket(web3.utils.toWei('0.004', 'ether')).send({
             from: accounts[3],
+            gas: '500000',
         });
 
-        const [tickets, prices] = await ticketSale.methods.checkResale().call();
-        assert.equal(tickets[0], 2);
-        assert.equal(prices[0], web3.utils.toWei('0.004', 'ether'));
+        const resaleData = await ticketSale.methods.checkResale().call();
+        assert.equal(resaleData[0][0], 2);
+        assert.equal(resaleData[1][0], web3.utils.toWei('0.004', 'ether'));
     });
 });
